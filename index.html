@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="IqraGPT — a simple AI chatbot powered by Gemini" />
+  <meta name="theme-color" content="#6C4BB6" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+  <title>IqraGPT</title>
+</head>
+<body>
+  <main class="app">
+    <!-- The app title stays above the conversation. -->
+    <header class="top-bar">
+      <span class="robot" aria-hidden="true">🤖</span>
+      <div>
+        <h1>IqraGPT</h1>
+        <p>Your AI assistant</p>
+      </div>
+    </header>
+
+    <!-- Only this area scrolls when messages get long. -->
+    <section id="chat" class="chat" role="log" aria-label="Chat messages" aria-live="polite" aria-relevant="additions"></section>
+
+    <form id="chat-form" class="input-bar">
+      <label class="visually-hidden" for="message-input">Message IqraGPT</label>
+      <input id="message-input" type="text" placeholder="Type your message…" autocomplete="off" required />
+      <button id="send-button" type="submit" aria-label="Send message">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="m5 12 7-7 7 7M12 5v15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </form>
+  </main>
+  <script src="script.js"></script>
+  <script>
+    // A service worker lets the browser recognize this as a PWA.
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js").catch((error) => {
+        console.warn("Service worker registration failed:", error);
+      });
+    }
+  </script>
+</body>
+</html>
