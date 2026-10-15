@@ -1,6 +1,6 @@
 // Replace this placeholder locally. A key in a public website is not secret.
-const API_KEY = "PASTE_YOUR_GEMINI_KEY_HERE";
-const MODEL = "gemini-2.0-flash-lite";
+const API_KEY = "AQ.Ab8RN6IBQlgYbKe2HQhmAvY-s6yhI86Uyjm9fcVs_6wCypT2zA";
+const MODEL = "gemini-3.5-flash-lite";
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
 
 // Gemini uses "user" for us and "model" for the assistant.
@@ -57,7 +57,14 @@ form.addEventListener("submit", async (event) => {
       body: JSON.stringify({ contents: history }),
       signal: controller.signal
     });
-    if (!response.ok) throw new Error(`Gemini request failed: ${response.status}`);
+  if (!response.ok) {
+  const errorData = await response.json().catch(() => ({}));
+  console.error("Gemini API error:", errorData);
+  throw new Error(
+    errorData.error?.message ||
+    `Gemini request failed: ${response.status}`
+  );
+}
 
     const data = await response.json();
     const parts = data.candidates?.[0]?.content?.parts || [];
