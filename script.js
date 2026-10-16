@@ -1,9 +1,9 @@
-// Replace this placeholder locally. A key in a public website is not secret.
-const API_KEY = "AQ.Ab8RN6IBQlgYbKe2HQhmAvY-s6yhI86Uyjm9fcVs_6wCypT2zA";
-const MODEL = "gemini-3.5-flash-lite";
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
+// OpenRouter API key — get your own at https://openrouter.ai/keys
+const API_KEY = "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";
+const MODEL = "openrouter/free";
+const API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-// Gemini uses "user" for us and "model" for the assistant.
+// Chat history — user's messages and the assistant's replies.
 const history = [];
 const chat = document.getElementById("chat");
 const form = document.getElementById("chat-form");
@@ -17,8 +17,8 @@ function scrollToNewest() {
 
 function addMessage(text, role) {
   const bubble = document.createElement("div");
+  // role is "user" or "model" — CSS colors them differently
   bubble.className = `message ${role}`;
-  // textContent displays text safely, rather than running HTML from a reply.
   bubble.textContent = text;
   chat.appendChild(bubble);
   scrollToNewest();
@@ -27,7 +27,6 @@ function addMessage(text, role) {
 
 addMessage("Assalam-o-Alaikum! I'm IqraGPT, your AI assistant. How can I help you today?", "model");
 
-// Submitting the form works for both the send button and the Enter key.
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const message = input.value.trim();
@@ -37,45 +36,45 @@ form.addEventListener("submit", async (event) => {
   sendButton.disabled = true;
   input.value = "";
   addMessage(message, "user");
-  history.push({ role: "user", parts: [{ text: message }] });
+  history.push({ role: "user", content: message });
 
   const typing = addMessage("IqraGPT is typing...", "model");
   typing.classList.add("typing");
 
-  // Stop waiting after 30 seconds if the connection hangs.
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
 
   try {
-    if (API_KEY === "PASTE_YOUR_GEMINI_KEY_HERE") {
-      throw new Error("Add your Gemini API key before sending messages.");
-    }
-
     const response = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents: history }),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${API_KEY}`,
+        // Optional but recommended by OpenRouter:
+        "HTTP-Referer": "https://zainullahwardag.github.io/Chatbot/",
+        "X-Title": "IqraGPT"
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: history
+      }),
       signal: controller.signal
     });
-  if (!response.ok) {
-  const errorData = await response.json().catch(() => ({}));
-  console.error("Gemini API error:", errorData);
-  throw new Error(
-    errorData.error?.message ||
-    `Gemini request failed: ${response.status}`
-  );
-}
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("OpenRouter API error:", errorData);
+      throw new Error(errorData.error?.message || `Request failed: ${response.status}`);
+    }
 
     const data = await response.json();
-    const parts = data.candidates?.[0]?.content?.parts || [];
-    const reply = parts.map((part) => part.text || "").join("").trim();
-    if (!reply) throw new Error("Gemini returned no text.");
+    const reply = data.choices?.[0]?.message?.content?.trim();
+    if (!reply) throw new Error("No reply received.");
 
     typing.remove();
     addMessage(reply, "model");
-    history.push({ role: "model", parts: [{ text: reply }] });
+    history.push({ role: "assistant", content: reply });
   } catch (error) {
-    // Remove the failed turn so the next request has valid conversation pairs.
     history.pop();
     typing.remove();
     addMessage("Sorry, I couldn't connect. Please try again.", "model");
